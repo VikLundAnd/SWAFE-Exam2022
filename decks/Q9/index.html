@@ -1,0 +1,256 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Question 9</title>
+
+    <link rel="stylesheet" href="../../dist/reset.css">
+    <link rel="stylesheet" href="../../dist/reveal.css">
+    <link rel="stylesheet" href="../../dist/theme/black.css">
+    <link rel="stylesheet" type="text/css" href="../../css/asciinema-player.css"/>
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="../../plugin/highlight/github-dark-dimmed.css">
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section data-markdown>
+          <textarea data-template>
+            ## Question 9
+            Explain the concept Progressive Web Apps.
+
+            Show how to implement a Progressive Web App with React.
+          </textarea>
+        </section>
+
+        <section>
+            <section>
+                <h2>Progressive Web Apps</h2>
+                <p>Capable, reliable and installable</p>
+                <img src="../../assets/PWA_diagram.svg" width="50%" alt="Diagram of PWA in relation to Web Apps and native apps">
+            </section>
+            <section>
+                <h3>Overview</h3>
+                <ul>
+                    <li>Can work offline - Using serviceworker and caching</li>
+                    <li>Service workers and a web manifest - makes it more reliable and installable</li>
+                    <li>Allows near native capabilities - like push notifications</li>
+                </ul>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <H2>How to PWA</H2>
+                <p>Requirments, considerations and examples.</p>
+            </section>
+            <section>
+                <h3>The Web Manifest</h3>
+                <p>Name, icons, URL and other metadata.</p>
+
+                <pre><code class="json" data-trim data-line-numbers><script type="text/template">
+{
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "name": "HackerWeb",
+  "short_name": "HackerWeb",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fff",
+  "description": "A readable Hacker News app.",
+  "icons": [{
+    "src": "images/touch/homescreen48.png",
+    "sizes": "48x48",
+    "type": "image/png"
+  }]
+}
+                </script></code></pre>
+                <small>Example from MDN Web Docs - Web app manifests</small>
+            </section>
+            <section>
+                <h3>Client-side storage</h3>
+                <p>Storing data locally on the client.</p>
+                <ul>
+                    <li>Web storage - Localstorage, sessionstorage</li>
+                    <li>IndexedDB</li>
+                    <li>Web SQL - deprecated</li>
+                </ul>
+            </section>
+            <section>
+                <h3>Caching strategies</h3>
+                <ul>
+                    <li>Stale-while-revalidate</li>
+                    <li>Cache first</li>
+                    <li>Network first</li>
+                </ul>
+            </section>
+            <section>
+                <h3>PWA in React with WorkBox</h3>
+                <p>Short introduction using WorkBox in React to make a cached PWA.</p>
+            </section>
+            <section>
+                <h3>1. Install WorkBox dependencies</h3>
+                <pre><code data-trim data-line-numbers><script type="text/template">
+npm i workbox-core
+npm i workbox-precaching
+npm i workbox-routing
+npm i -D workbox-webpack-plugin
+                </script></code></pre>
+            </section>
+            <section>
+                <h3>2. Implement serviceworker</h3>
+                <pre><code class="typescript" data-trim data-line-numbers><script type="text/template">
+import { clientsClaim } from 'workbox-core';
+import { precacheAndRoute } from 'workbox-precaching';
+
+clientsClaim();
+
+precacheAndRoute(self.__WB_MANIFEST);
+                </script></code></pre>
+                <small>From course lesson 12 Progressive Web Apps</small>
+            </section>
+            <section>
+                <h3>3. Register serviceworker</h3>
+                <pre><code class="typescript" data-trim data-line-numbers><script type="text/template">
+// registerWorker.js
+const register = (pathToWorker, onInstall, onUpdate, onError) => {
+    // We will write this code shortly
+}
+const registerWorker = () => {
+    register(
+        '/service-worker.js',
+        (reg) => console.info('Service worker installed', reg),
+        (reg) => console.info('Service worker updated', reg),
+        (err) => console.error('Service worker failed', err)
+    )
+}
+export default registerWorker
+                </script></code></pre>
+                <small>From course lesson 12 Progressive Web Apps</small>
+            </section>
+
+            <section>
+                <h3>3. Call registerWorker</h3>
+                <pre><code class="typescript" data-trim data-line-numbers><script type="text/template">
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import registerWorker from './registerWorker';
+ReactDOM.render(
+    <React.StrictMode>
+        <App />
+    </React.StrictMode>,
+    document.getElementById('root')
+);
+
+registerWorker();
+                </script></code></pre>
+                <small>From course lesson 12 Progressive Web Apps</small>
+            </section>
+
+            <section>
+                <h3>4. The register function</h3>
+                <pre><code class="typescript" data-trim data-line-numbers><script type="text/template">
+const register = (pathToWorker, onInstall, onUpdate, onError) => {
+  if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
+    const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
+    if (publicUrl.origin !== window.location.origin) {
+      return;
+    }
+
+    window.addEventListener("load", async () => {
+      try {
+        const registration = await navigator.serviceWorker.register(
+          process.env.PUBLIC_URL + pathToWorker
+        );
+        // Code to check progress goes here
+        registration.onupdatefound = () => {
+          const worker = registration.installing;
+          if (worker) {
+            worker.onstatechange = () => {
+              if (worker.state === "installed") {
+                if (navigator.serviceWorker.controller) {
+                  if (onUpdate) {
+                    onUpdate(registration);
+                  }
+                } else {
+                  if (onInstall) {
+                    onInstall(registration);
+                  }
+                }
+              }
+            };
+          }
+        };
+      } catch {
+        // Insert code to catch
+      }
+    });
+  }
+};
+                </script></code></pre>
+                <small>From course lesson 12 Progressive Web Apps</small>
+            </section>
+
+            <section>
+                <h3>5. Enable reload of different routes</h3>
+                <pre><code class="typescript" data-trim data-line-numbers><script type="text/template">
+import { clientsClaim } from "workbox-core";
+import { createHandlerBoundToURL, precacheAndRoute } from "workbox-precaching";
+import { registerRoute } from "workbox-routing";
+clientsClaim();
+precacheAndRoute(self.__WB_MANIFEST);
+const fileExtensionRegexp = new RegExp("/[^/?]+.[^/]+$");
+registerRoute(({ request, url }) => {
+  if (request.mode !== "navigate") {
+    return false;
+  }
+  if (url.pathname.startsWith("/_")) {
+    return false;
+  }
+  if (url.pathname.match(fileExtensionRegexp)) {
+    return false;
+  }
+  return true;
+}, createHandlerBoundToURL(process.env.PUBLIC_URL + "/index.html"));
+                </script></code></pre>
+                <small>From course lesson 12 Progressive Web Apps</small>
+            </section>
+            <section>
+                <h3>The shortcut</h3>
+                <pre><code data-trim><script type="text/template">
+npx create-react-app appname --template cra-template-pwa
+                </script></code></pre>
+                <small>Create a React app with PWA template.</small>
+                <pre><code data-trim><script type="text/template">
+npx create-react-app appname --template cra-template-pwa-typescript
+                </script></code></pre>
+                <small>Create a React app with PWA template for Typescript.</small>
+            </section>
+        </section>
+    </div>
+</div>
+
+<script src="../../dist/reveal.js"></script>
+<script src="../../plugin/notes/notes.js"></script>
+<script src="../../plugin/markdown/markdown.js"></script>
+<script src="../../plugin/highlight/highlight.js"></script>
+<script src="../../js/asciinema-player.js"></script>
+
+<script>
+    // More info about initialization & config:
+    // - https://revealjs.com/initialization/
+    // - https://revealjs.com/config/
+    Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        pdfSeparateFragments: false,
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+    });
+</script>
+</body>
+</html>

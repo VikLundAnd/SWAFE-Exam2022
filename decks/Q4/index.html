@@ -1,0 +1,254 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Question 4</title>
+
+    <link rel="stylesheet" href="../../dist/reset.css">
+    <link rel="stylesheet" href="../../dist/reveal.css">
+    <link rel="stylesheet" href="../../dist/theme/black.css">
+    <link rel="stylesheet" type="text/css" href="../../css/asciinema-player.css"/>
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="../../plugin/highlight/github-dark-dimmed.css">
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section data-markdown>
+          <textarea data-template>
+            ## Question 4
+            Explain and discuss the two different approaches to forms in Angular (template-driven and reactive).
+          </textarea>
+        </section>
+        <section>
+            <section>
+                <H2>Template-driven forms</H2>
+                <p>Forms using the built-in template directives.</p>
+            </section>
+            <section>
+                <h3>Overview</h3>
+                <p>
+                    <ul>
+                        <li>Implicitly creates datamodel.</li>
+                        <li>Not very flexible.</li>
+                    </ul>
+                </p>
+            </section>
+            <section>
+                <h3>Example</h3>
+                <pre><code data-trim data-line-numbers="2|5,7,10,12,15"><script type="text/template">
+<h1>Template-driven forms</h1>
+<form #f="ngForm" (ngSubmit)="onSubmit(f)">
+	<div class="form-wrapper">
+		<label for="first_name">First name</label>
+		<input type="text" name="first_name" ngModel>
+		<label for="last_name">Last name</label>
+		<input type="text" name="last_name" ngModel>
+		<hr />
+		<label for="phone">Phone</label>
+		<input type="text" name="phone" ngModel>
+		<label for="email">E-mail</label>
+		<input type="text" name="email" ngModel>
+		<hr />
+		<label for="class">Class</label>
+		<select name="class" ngModel>
+			<option *ngFor="let class of classes$ | async" [ngValue]="class">{{ class.name }}</option>
+		</select>
+		<hr />
+		<button type="submit">Submit</button>
+	</div>
+</form>
+<h2>Model</h2>
+<pre>
+{{ f.value | json }}
+</pre>
+                </script></code></pre>
+                <small>Example from lesson 04: Forms</small>
+            </section>
+
+        </section>
+        <section>
+            <section>
+                <H2>Reactive forms</H2>
+                <p>Forms programatically</p>
+            </section>
+            <section>
+                <h3>Overview</h3>
+                <p>
+                    <ul>
+                        <li>Provided by the <code>ReactiveFormsModule</code>.</li>
+                        <li>Defined in component class rather than template.</li>
+                    </ul>
+                </p>
+            </section>
+            <section>
+                <h3>Example</h3>
+                <p>Setting up the formgroup.</p>
+                <pre><code class="typescript" data-trim data-ln-start-from="10" data-line-numbers="10-17|21-39"><script type="text/template">
+@Component({
+  selector: 'app-credit-card-add',
+  templateUrl: './credit-card-add.component.html',
+  styleUrls: ['./credit-card-add.component.scss']
+})
+export class CreditCardAddComponent implements OnInit {
+
+  constructor(private formBuilder: FormBuilder, private readonly creditCardService: CreditCardService) { }
+
+  creditCardForm = this.formBuilder.group({
+    card_number: ['', { validators: [Validators.required, Validators.pattern(/^.{7,16}$/)], updateOn: "blur" }],
+    csc_code: ['', { validators: [Validators.required, Validators.pattern(/^.{3}$/)], updateOn: "blur" }],
+    card_holder_name: ['', { validators: [Validators.required], updateOn: "blur" }],
+    expiration_date_month: ['', { validators: [Validators.required, Validators.min(1), Validators.max(12)], updateOn: "blur" }],
+    expiration_date_year: ['', { validators: [Validators.required, Validators.min(1), Validators.max(31)], updateOn: "blur" }],
+    issuer: ['']
+  })
+
+  public CreditCardReturn$!: Observable<ICreditCardCreatedDTO>;
+
+  onSubmit(): void {
+
+    if (this.creditCardForm.valid) {
+      const creditCard: ICreditCard = {
+        card_number: this.card_number.value,
+        cardholder_name: this.card_holder_name.value,
+        csc_code: this.csc_code.value,
+        expiration_date_month: this.expiration_date_month.value,
+        expiration_date_year: this.expiration_date_year.value,
+        issuer: this.issuer.value
+      }
+
+      this.CreditCardReturn$ = this.creditCardService.postCreditCard(creditCard);
+      this.CreditCardReturn$.subscribe(
+        (data) => this.onSuccess(data),
+        (error) => this.handleError(error)
+      );
+    }
+  }
+
+  ngOnInit(): void {
+  }
+
+  private onSuccess(creditCardCreated: ICreditCardCreatedDTO): void {
+    alert(creditCardCreated.message)
+  }
+
+  private handleError(e: HttpErrorResponse): void {
+    alert(e.message)
+  }
+
+  get card_number() { return this.creditCardForm.get('card_number') as FormControl; }
+  get csc_code() { return this.creditCardForm.get('csc_code') as FormControl; }
+  get card_holder_name() { return this.creditCardForm.get('card_holder_name') as FormControl; }
+  get expiration_date_month() { return this.creditCardForm.get('expiration_date_month') as FormControl; }
+  get expiration_date_year() { return this.creditCardForm.get('expiration_date_year') as FormControl; }
+  get issuer() { return this.creditCardForm.get('issuer') as FormControl; }
+
+}
+                </script></code></pre>
+            </section>
+            <section>
+                <h3>Example</h3>
+                <p>Binding the formgroup to template.</p>
+                <pre><code data-trim data-line-numbers="2|6,17,30,42,56|8-12"><script type="text/template">
+<h1>Add a credit card</h1>
+<form [formGroup]='creditCardForm' (ngSubmit)="onSubmit()">
+	<div class="creditcard-form-wrapper">
+        <div class="form-element">
+            <label for="card_number">Card number</label>
+            <input type="number" formControlName="card_number">
+
+            <div *ngIf="card_number.invalid && (card_number.dirty || card_number.touched)">
+                <div class="error-wrapper" *ngFor="let error of (card_number.errors! | formError: 'Card number')">
+                    {{error}}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-element">
+            <label for="csc_code">CSC code</label>
+            <input type="number"  formControlName="csc_code">
+
+
+            <div class="error-wrapper" *ngIf="csc_code.invalid && (csc_code.dirty || csc_code.touched)">
+                <div *ngFor="let error of (csc_code.errors! | formError: 'CSC code')">
+                    {{error}}
+                </div>
+            </div>
+        </div>
+
+        <section class="row">
+            <div class="form-element">
+                <label for="card_holder_name">Card holder name</label>
+                <input type="text"  formControlName="card_holder_name">
+
+                <div class="error-wrapper" *ngIf="card_holder_name.invalid && (card_holder_name.dirty || card_holder_name.touched)">
+                    <div *ngFor="let error of (card_holder_name.errors! | formError: 'Card holder name')">
+                        {{error}}
+                    </div>
+                </div>
+            </div>
+
+            <section class="row">
+                <div class="form-element">
+                    <label for="expiration_date_month">Expiration date month</label>
+                    <input type="number"  formControlName="expiration_date_month">
+
+                    <div class="error-wrapper" *ngIf="expiration_date_month.invalid && (expiration_date_month.dirty || expiration_date_month.touched)">
+                        <div *ngFor="let error of (expiration_date_month.errors! | formError: 'Expiration date month')">
+                            {{error}}
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="form-element">
+                    <label for="expiration_date_year">Expiration date year</label>
+                    <input type="number"  formControlName="expiration_date_year">
+
+                    <div class="error-wrapper" *ngIf="expiration_date_year.invalid && (expiration_date_year.dirty || expiration_date_year.touched)">
+                        <div *ngFor="let error of (card_number.errors! | formError: 'Expiration date')">
+                            {{error}}
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </section>
+
+        <div class="form-element">
+            <label for="issuer">Issuer</label>
+            <input type="text" formControlName="issuer">
+        </div>
+
+		<button class="submit" type="submit">Submit</button>
+	</div>
+</form>
+                </script></code></pre>
+            </section>
+        </section>
+    </div>
+</div>
+
+<script src="../../dist/reveal.js"></script>
+<script src="../../plugin/notes/notes.js"></script>
+<script src="../../plugin/markdown/markdown.js"></script>
+<script src="../../plugin/highlight/highlight.js"></script>
+<script src="../../js/asciinema-player.js"></script>
+
+<script>
+    // More info about initialization & config:
+    // - https://revealjs.com/initialization/
+    // - https://revealjs.com/config/
+    Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        pdfSeparateFragments: false,
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Question 6</title>
+
+    <link rel="stylesheet" href="../../dist/reset.css">
+    <link rel="stylesheet" href="../../dist/reveal.css">
+    <link rel="stylesheet" href="../../dist/theme/black.css">
+    <link rel="stylesheet" type="text/css" href="../../css/asciinema-player.css"/>
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="../../plugin/highlight/github-dark-dimmed.css">
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section data-markdown>
+          <textarea data-template>
+            ## Question 6
+            Give an overview of React.
+
+            Explain how we can use hooks in a single page application built with React.
+
+          </textarea>
+        </section>
+
+        <section>
+            <section>
+                <h2>React</h2>
+                <p>Javascript frontend library.</p>
+
+            </section>
+            <section>
+                <h3>Overview</h3>
+                <ul>
+                    <li>Componentbased</li>
+                    <li>Functional</li>
+                    <li>Unopinionated</li>
+                </ul>
+            </section>
+            <section>
+                <h3>Basic React component</h3>
+                <p>It's just a function</p>
+                <pre><code class="typescript" data-line-numbers data-trim><script type="text/template">
+function Welcome(props) {
+    return <h1>Hello, {props.name}</h1>;
+}
+                </script></code></pre>
+                <small>Snippet from React: Components and Props</small>
+            </section>
+            <section>
+                <h3>JSX</h3>
+                <p>JavaScript Syntax Extension</p>
+                <ul>
+                    <li>Declarative</li>
+                    <li>Couples markup and logic</li>
+                    <li>Guards against XSS</li>
+                </ul>
+                <pre><code class="typescript" data-trim data-line-numbers="11-13"><script type="text/template">
+function formatName(user) {
+  return user.firstName + ' ' + user.lastName;
+}
+
+const user = {
+  firstName: 'Harper',
+  lastName: 'Perez'
+};
+
+const element = (
+  <h1>
+    Hello, {formatName(user)}!
+  </h1>
+);
+
+ReactDOM.render(
+  element,
+  document.getElementById('root')
+);
+                </script></code></pre>
+                <small>Snippet from React: Introducing JSX</small>
+
+            </section>
+        </section>
+        <section>
+            <section>
+                <h3>Hooks in React</h3>
+                <p></p>
+                <ul>
+                    <li>useState</li>
+                    <li>useEffect</li>
+                    <li>useMemo</li>
+                    <li>useCallback</li>
+                    <li>useRef</li>
+                </ul>
+            </section>
+            <section>
+                <h3>useState</h3>
+                <p>Managing component state</p>
+                <pre><code class="typescript" data-trim data-line-numbers="18|23,41"><script type="text/template">
+export interface InputDialogProps {
+    title?: string;
+    content?: JSX.Element;
+    label: string;
+    open: boolean;
+    onSubmit: (value: string) => void;
+    onCancel: () => void;
+}
+
+export const InputDialog: FC<InputDialogProps> = ({
+    open,
+    onSubmit,
+    onCancel,
+    content,
+    label,
+    title,
+}) => {
+    const [inputValue, setInputValue] = useState('');
+
+    const onKeyPress: KeyboardEventHandler<HTMLDivElement> = (event) => {
+        switch (event.key) {
+            case 'Enter':
+                onSubmit(inputValue);
+                break;
+        }
+    };
+
+    return (
+        <Dialog open={open} onClose={onCancel} onKeyPress={onKeyPress}>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogContent>
+                <DialogContentText>{content}</DialogContentText>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    id="name"
+                    label={label}
+                    type="email"
+                    fullWidth
+                    variant="standard"
+                    onChange={(e) => setInputValue(e.currentTarget.value)}
+                />
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onCancel}>Cancel</Button>
+                <Button onClick={() => onSubmit(inputValue)}>Submit</Button>
+            </DialogActions>
+        </Dialog>
+    );
+};
+                </script></code></pre>
+                <small>Example from my bachelor project.</small>
+            </section>
+            <section>
+                <h3>useEffect</h3>
+                <p>Hook into component lifecycles</p>
+                <pre><code class="typescript" data-trim data-line-numbers><script type="text/template">
+useEffect(() => {
+    // Runs on every render
+  });
+
+useEffect(() => {
+    // Runs only on first render/mount
+  }, []);
+
+useEffect(() => {
+    // Runs if dependencies change and first render/mount
+  }, [dependencies]);
+
+useEffect(() => () => {
+    // Runs before unmounting, used for cleanup
+  }, []);
+                </script></code></pre>
+            </section>
+            <section>
+                <h3>useMemo</h3>
+                <p>Memoize a value</p>
+                <pre><code class="typescript" data-trim><script type="text/template">
+const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
+                </script></code></pre>
+                <small>Snippet from React: Hooks API Reference</small>
+
+            </section>
+            <section>
+                <h3>useCallback</h3>
+                <p>Memoized callbacks</p>
+                <pre><code class="typescript" data-trim><script type="text/template">
+const memoizedCallback = useCallback(
+  () => {
+    doSomething(a, b);
+  },
+  [a, b],
+);
+                </script></code></pre>
+                <small>Snippet from React: Hooks API Reference</small>
+
+            </section>
+            <section>
+                <h3>useRef</h3>
+                <p>Access element through reference - allows for imperative programming</p>
+                <pre><code class="typescript" data-trim><script type="text/template">
+const refContainer = useRef(initialValue);
+                </script></code></pre>
+                <small>Snippet from React: Hooks API Reference</small>
+                <pre><code class="typescript" data-trim data-line-numbers="2,9"><script type="text/template">
+function TextInputWithFocusButton() {
+  const inputEl = useRef(null);
+  const onButtonClick = () => {
+    // `current` points to the mounted text input element
+    inputEl.current.focus();
+  };
+  return (
+    <>
+      <input ref={inputEl} type="text" />
+      <button onClick={onButtonClick}>Focus the input</button>
+    </>
+  );
+}
+                </script></code></pre>
+                <small>Snippet from React: Hooks API Reference</small>
+
+            </section>
+        </section>
+
+    </div>
+</div>
+
+<script src="../../dist/reveal.js"></script>
+<script src="../../plugin/notes/notes.js"></script>
+<script src="../../plugin/markdown/markdown.js"></script>
+<script src="../../plugin/highlight/highlight.js"></script>
+<script src="../../js/asciinema-player.js"></script>
+
+<script>
+    // More info about initialization & config:
+    // - https://revealjs.com/initialization/
+    // - https://revealjs.com/config/
+    Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        pdfSeparateFragments: false,
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Question 2</title>
+
+    <link rel="stylesheet" href="../../dist/reset.css">
+    <link rel="stylesheet" href="../../dist/reveal.css">
+    <link rel="stylesheet" href="../../dist/theme/black.css">
+    <link rel="stylesheet" type="text/css" href="../../css/asciinema-player.css"/>
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="../../plugin/highlight/github-dark-dimmed.css">
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section data-markdown>
+          <textarea data-template>
+            ## Question 2
+            Explain reactive programming using RxJS and how network communication is done in Angular according to best practices (HttpClientModule).
+          </textarea>
+        </section>
+        <section>
+            <section>
+                <H2>RxJS</H2>
+                <p>Reactive programming using observables</p>
+                <small>Implementation of observable</small>
+                <small>Methods for manipulating observables</small>
+            </section>
+            <section>
+                <h3>Observable types</h3>
+                <ul>
+                    <li><code>Observable</code></li>
+                    <li><code>Subject</code> hot observable that allows for multicasting.</li>
+                    <li><code>BehaviorSubject</code> is a Subject with the concept of a current value.</li>
+                </ul>
+            </section>
+            <section>
+                <H3>Operator types</H3>
+                <ul>
+                    <li>Pipeable operators</li>
+                    <li>Creation operators</li>
+                </ul>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <H2>Network communication</H2>
+                <p>Network communication using <code>HttpClientModule</code>.</p>
+                <small>Examples from swafe - angular assignment.</small>
+            </section>
+            <section>
+                <h3>Add <code>HttpClientModule</code> to module imports.</h3>
+                <pre><code data-trim data-ln-start-from="13" data-line-numbers="7">
+@NgModule({
+  declarations: [AppComponent, HomeComponent, NavigationBarComponent],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    CreditCardModule,
+    HttpClientModule,
+    NoopAnimationsModule,
+    MatButtonModule,
+    FlexLayoutModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent],
+})
+export class AppModule { }
+                </code></pre>
+            </section>
+            <section>
+                <h3>Implement service for API requests.</h3>
+                <pre><code data-trim>
+                    ng g s transaction
+                </code></pre>
+                <small>Create a transactions service.</small>
+                <pre><code data-trim data-ln-start-from="13" data-line-numbers="8, 11">
+                    <script type="text/template">
+@Injectable({
+  providedIn: 'root',
+})
+export class TransactionService {
+  private baseUrl: string = '/api';
+  private transactionsUrl: string = this.baseUrl + '/transactions';
+
+  constructor(private readonly httpClient: HttpClient) { }
+
+  public getTransactions(): Observable<ITransaction[]> {
+    return this.httpClient.get<ITransaction[]>(this.transactionsUrl);
+  }
+                    </script></code></pre>
+                <small>Inject and use <code>httpClient</code>.</small>
+            </section>
+
+            <section>
+                <pre><code data-trim data-ln-start-from="28" data-line-numbers="11-13">
+                    <script type="text/template">
+ngOnInit(): void {
+    this.creditCards = this.creditCardService
+        .getCreditCards()
+        .pipe(
+            tap((cc: ICreditCard[]) =>
+                this.current_credit_card_number.next(cc[0].card_number)
+            )
+        );
+    this.current_credit_card_number.subscribe(
+        (new_credit_card_number: number) => {
+            this.filtered = this.transactionListService.getFilteredTransactions(
+                new_credit_card_number
+            );
+        }
+    );
+}
+                    </script></code></pre>
+                <small>Use transaction service. </small>
+                <small><em>transaction-overview.component.ts</em></small>
+
+            </section>
+            <section>
+                <pre><code data-trim data-line-numbers="13">
+                    <script type="text/template">
+<div class="container">
+  <h1>Transactions</h1>
+  <button class="createBtn" mat-raised-button routerLink="add">Create</button>
+  <span>Filter by:</span>
+  <select (change)="this.filterTransactions($event.target)" class="select">
+    <option
+            *ngFor="let creditCard of creditCards | async"
+            value="{{ creditCard.card_number }}"
+    >
+      {{ creditCard.cardholder_name }}
+    </option>
+  </select>
+  <app-transaction-list [filtered]="this.filtered"> </app-transaction-list>
+</div>
+                    </script></code></pre>
+                <small>Pass down observable.</small>
+                <small><em>transaction-overview.component.html</em></small>
+            </section>
+            <section>
+                <pre><code data-trim data-line-numbers="15">
+                    <script type="text/template">
+<div class="header-container">
+  <span class="spacing">Date:</span>
+  <span class="spacing">Credit card number:</span>
+  <span class="spacing">Comment:</span>
+  <span class="spacing-amount">Amount:</span>
+  <span class="spacing-currency">Curreny:</span>
+  <div class="">
+    <img class="icon" src="../../../assets/delete.png" />
+  </div>
+</div>
+<div class="divider"></div>
+<app-transaction-list-item
+        appHighlight="blue"
+        class="line"
+        *ngFor="let transaction of filtered | async"
+        [transaction]="transaction"
+></app-transaction-list-item>
+                    </script></code></pre>
+                <small>Asynchronously pipe observable into components for each transaction.</small>
+                <small><em>transaction-list.component.html</em></small>
+
+            </section>
+
+
+            <section>
+                <h3>Use of <code>httpClientModule</code> and <code>RxJS</code>.</h3>
+                <pre><code class='typescript' data-trim data-ln-start-from="33" data-line-numbers><script type="text/template">
+public getCreditCardById(
+    card_number: number
+): Observable<ICreditCard | undefined> {
+    return this.httpClient
+        .get<ICreditCard[]>(this.creditCardUrl)
+        .pipe(
+            map((credit_cards: ICreditCard[]) =>
+                credit_cards.find(
+                    (credit_card: ICreditCard) =>
+                        credit_card.card_number === card_number
+                )
+            )
+        );
+}
+                </script></code></pre>
+            </section>
+        </section>
+    </div>
+</div>
+
+<script src="../../dist/reveal.js"></script>
+<script src="../../plugin/notes/notes.js"></script>
+<script src="../../plugin/markdown/markdown.js"></script>
+<script src="../../plugin/highlight/highlight.js"></script>
+<script src="../../js/asciinema-player.js"></script>
+
+<script>
+    // More info about initialization & config:
+    // - https://revealjs.com/initialization/
+    // - https://revealjs.com/config/
+    Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        pdfSeparateFragments: false,
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+    });
+</script>
+</body>
+</html>

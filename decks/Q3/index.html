@@ -1,0 +1,141 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Question 3</title>
+
+    <link rel="stylesheet" href="../../dist/reset.css">
+    <link rel="stylesheet" href="../../dist/reveal.css">
+    <link rel="stylesheet" href="../../dist/theme/black.css">
+    <link rel="stylesheet" type="text/css" href="../../css/asciinema-player.css"/>
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="../../plugin/highlight/github-dark-dimmed.css">
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section data-markdown>
+          <textarea data-template>
+            ## Question 3
+            Explain how routing works, including lazy-loading and guards.
+          </textarea>
+        </section>
+        <section>
+            <section>
+                <H2>Routing</H2>
+                <p>Mapping functionality to URL.</p>
+                <small>
+                    <ul>
+                        <li>Built into Angular</li>
+                        <li><code>history.pushState</code> in the browser.</li>
+                        <li><code data-trim data-noescape>
+&lt;base href&gt;
+                        </code></li>
+                    </ul>
+                </small>
+            </section>
+            <section>
+                <h3>The routing module</h3>
+                <pre><code class='typescript' data-trim data-ln-start-from="7" data-line-numbers="2-5|10-16"><script type="text/template">
+const routes: Routes = [
+  {
+    path: '',
+    component: HomeComponent,
+  },
+  {
+    path: 'add-credit-card',
+    component: CreditCardAddComponent,
+  },
+  {
+    path: 'transaction',
+    loadChildren: () =>
+      import('./transaction/transaction.module').then(
+        (m) => m.TransactionModule
+      ),
+  },
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule],
+})
+export class AppRoutingModule {}
+                </script></code></pre>
+                <small>
+                    <ul>
+                        <li>First match wins</li>
+                        <li>Wildcard routes</li>
+                        <li>Lazy loading</li>
+                    </ul>
+                </small>
+
+            </section>
+
+            <section>
+                <h3>Router outlet</h3>
+                <pre><code class='typescript' data-trim data-line-numbers="2" ><script type="text/template">
+<app-navigation-bar></app-navigation-bar>
+<router-outlet></router-outlet>
+                </script></code></pre>
+                <small>app.component.html</small>
+            </section>
+
+            <section>
+                <h3>Routerlink</h3>
+                <pre><code class='typescript' data-trim data-line-numbers="3"><script type="text/template">
+<nav>
+  <ul fxLayout.xs="column" fxLayout.gt-xs="row">
+    <li><a routerLink="">Home</a></li>
+    <li>
+      <a routerLink="add-credit-card">Add Credit Card</a>
+    </li>
+    <li>
+      <a routerLink="transaction">Transaction</a>
+    </li>
+  </ul>
+  <p fxShow.xs fxHide.gt-xs>Please buy a bigger screen</p>
+</nav>
+                </script></code></pre>
+                <small>app.component.html</small>
+            </section>
+
+            <section>
+                <h3>Router guards</h3>
+                <p>Prevent unintended access of routes</p>
+                <small>
+                    <ul>
+                        <li><code>CanActivate</code> - When client enters</li>
+                        <li><code>CanActivateChild</code></li>
+                        <li><code>CanDeactivate</code> - When client leaves </li>
+                        <li><code>Resolve</code> data during navigation</li>
+                        <li><code>CanLoad</code> prevents lazy loading childroutes</li>
+                    </ul>
+                </small>
+            </section>
+        </section>
+    </div>
+</div>
+
+<script src="../../dist/reveal.js"></script>
+<script src="../../plugin/notes/notes.js"></script>
+<script src="../../plugin/markdown/markdown.js"></script>
+<script src="../../plugin/highlight/highlight.js"></script>
+<script src="../../js/asciinema-player.js"></script>
+
+<script>
+    // More info about initialization & config:
+    // - https://revealjs.com/initialization/
+    // - https://revealjs.com/config/
+    Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        pdfSeparateFragments: false,
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+    });
+</script>
+</body>
+</html>

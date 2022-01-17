@@ -1,0 +1,266 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Question 1</title>
+
+    <link rel="stylesheet" href="../../dist/reset.css">
+    <link rel="stylesheet" href="../../dist/reveal.css">
+    <link rel="stylesheet" href="../../dist/theme/black.css">
+    <link rel="stylesheet" type="text/css" href="../../css/asciinema-player.css"/>
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="../../plugin/highlight/github-dark-dimmed.css">
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section data-markdown>
+          <textarea data-template>
+            ## Question 1
+            Explain the following Angular concepts: **Directives**, **modules**, **services** and **data binding**.
+          </textarea>
+        </section>
+        <section>
+            <section>
+                <H2>Directives</H2>
+                <p>Extends HTML</p>
+                <small>Document Object Model (DOM) instruction sets, which decide how logic implementation can be
+                    done.</small>
+            </section>
+            <section>
+                <h3>Types</h3>
+                <ul>
+                    <li>Components</li>
+                    <li>Attribute directives</li>
+                    <li>Structural directives</li>
+                </ul>
+            </section>
+            <section>
+                <H3>Components</H3>
+                <small>Directives with a template. This type of directive is the most common directive type.</small>
+            </section>
+            <section>
+                <H3>Components - Decorator</H3>
+                <pre><code data-trim data-line-numbers="2|3|4">
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+                </code></pre>
+            </section>
+            <section>
+                <H3>Attribute directives</H3>
+                <small>Directives that change the appearance or behavior of an element, component, or another
+                    directive.</small>
+                <pre><code data-trim data-line-numbers data-ln-start-from="3">
+@Directive({
+  selector: '[appChanges]'
+})
+
+export class ChangesDirective {
+  constructor(private eltRef: ElementRef) {
+
+    this.eltRef.nativeElement.style.backgroundColor = 'green';
+    this.eltRef.nativeElement.style.color = 'white';
+  }
+
+  ngOnInit() {
+  }
+}
+                </code></pre>
+            </section>
+            <section>
+                <H3>Structural directives</H3>
+                <small>Directives that change the DOM layout by adding and removing DOM elements.</small>
+                <pre><code data-trim data-line-numbers data-ln-start-from="3">
+/**
+ * Add the template content to the DOM unless the condition is true.
+ */
+@Directive({ selector: '[appUnless]'})
+export class UnlessDirective {
+  private hasView = false;
+
+  constructor(
+    private templateRef: TemplateRef<any>,
+    private viewContainer: ViewContainerRef) { }
+
+  @Input() set appUnless(condition: boolean) {
+    if (!condition && !this.hasView) {
+      this.viewContainer.createEmbeddedView(this.templateRef);
+      this.hasView = true;
+    } else if (condition && this.hasView) {
+      this.viewContainer.clear();
+      this.hasView = false;
+    }
+  }
+}
+                </code></pre>
+            </section>
+            <section>
+                <H3>Structural directives - Shorthand</H3>
+                <pre><code data-trim data-line-numbers>
+<div *ngIf="hero" class="name">
+    {{hero.name}}
+</div>
+                </code></pre>
+
+                <p>Equals</p>
+
+                <pre><code data-trim data-line-numbers>
+<ng-template [ngIf]="hero">
+  <div class="name">
+      {{hero.name}}
+  </div>
+</ng-template>
+                </code></pre>
+            </section>
+        </section>
+        <section>
+            <section>
+                <H2>Modules</H2>
+                <small>Grouping components, directives, pipes and services that are related.</small>
+            </section>
+            <section>
+                <pre><code data-trim data-line-numbers="2|5|9|13|17" data-ln-start-from="3" data-noescape>
+@NgModule({
+  imports:      [ BrowserModule ],
+  /* Classes needed in this module, exported from others. */
+
+  providers:    [ Logger ],
+  /* Services that need to be available for
+     DI in the module. */
+
+  declarations: [ AppComponent ],
+  /* The components, directives, and pipes
+     belonging to this NgModule. */
+
+  exports:      [ AppComponent ],
+  /* Subset of declarations that should be accesible
+     from other modules. */
+
+  bootstrap:    [ AppComponent ]
+  /* Defines the root component.
+     Only the root module should define this. */
+})
+export class AppModule { }
+                </code></pre>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Services</h2>
+                <p>Contain logic in in injectable classes.</p>
+                <small>E.g. logging, backend communication, etc. </small>
+            </section>
+            <section>
+                <h3>Prototype</h3>
+                <pre><code data-trim data-ln-start-from="3">
+@Injectable({
+  providedIn: 'root',
+})
+export class HeroService {
+
+  constructor() { }
+
+}
+                </code></pre>
+            </section>
+            <section>
+                <h3>Dependency injection</h3>
+                <pre><code data-trim data-line-numbers="4-6">
+export class HeroService {
+  private heroes: Hero[] = [];
+
+  constructor(
+    private backend: BackendService,
+    private logger: Logger) { }
+
+  getHeroes() {
+    this.backend.getAll(Hero).then( (heroes: Hero[]) => {
+      this.logger.log(`Fetched ${heroes.length} heroes.`);
+      this.heroes.push(...heroes); // fill cache
+    });
+    return this.heroes;
+  }
+}
+                </code></pre>
+            </section>
+            <section>
+                <h3>Scope</h3>
+                <small><strong>Singleton</strong> - if part of <code>provider</code> in root module or if <code>providedIn: 'root'</code></small>
+                <small><strong>Limit scope</strong> - if part of <code>provider</code> in module or if <code>provider</code> of component</small>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Data binding</h2>
+                <p>Bind data state to view.</p>
+            </section>
+            <section>
+                <small>
+                <table>
+                    <thead><tr>
+                        <th>Type</th>
+                        <th>Syntax</th>
+                        <th>Category</th>
+                    </tr></thead>
+                    <tbody><tr>
+                        <td>Interpolation <br/>
+                            Property <br/>
+                            Attribute <br/>
+                            Class <br/>
+                            Style <br/>
+                        </td>
+                        <td>
+                            <code>{{expression}}</code><br/>
+                            <code>[target]="expression"</code>
+                        </td>
+                        <td>One-way <br/>
+                            from data source <br/>
+                            to view target</td>
+                    </tr>
+                    <tr>
+                        <td>Event </td>
+                        <td><code>(target)="statement"</code></td>
+                        <td>One-way <br/>
+                            from view target<br/>
+                            to data source </td>
+                    </tr>
+                    <tr>
+                        <td>Two-way</td>
+                        <td><code>[(target)]="expression"</code></td>
+                        <td>Two-way</td>
+                    </tr>
+                    </tbody>
+                </table>
+                </small>
+            </section>
+        </section>
+
+    </div>
+</div>
+
+<script src="../../dist/reveal.js"></script>
+<script src="../../plugin/notes/notes.js"></script>
+<script src="../../plugin/markdown/markdown.js"></script>
+<script src="../../plugin/highlight/highlight.js"></script>
+<script src="../../js/asciinema-player.js"></script>
+
+<script>
+    // More info about initialization & config:
+    // - https://revealjs.com/initialization/
+    // - https://revealjs.com/config/
+    Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        pdfSeparateFragments: false,
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+    });
+</script>
+</body>
+</html>

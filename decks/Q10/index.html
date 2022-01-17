@@ -1,0 +1,158 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Question 9</title>
+
+    <link rel="stylesheet" href="../../dist/reset.css">
+    <link rel="stylesheet" href="../../dist/reveal.css">
+    <link rel="stylesheet" href="../../dist/theme/black.css">
+    <link rel="stylesheet" type="text/css" href="../../css/asciinema-player.css"/>
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="../../plugin/highlight/github-dark-dimmed.css">
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section data-markdown>
+          <textarea data-template>
+            ## Question 10
+            Explain what a native web component is.
+
+            Which functionality is required by the browser?
+
+            Show how to build a native web component.
+
+            Discuss pros and cons of native web components.
+          </textarea>
+        </section>
+
+        <section>
+            <section>
+                <h2>Native web component</h2>
+                <p>A set of platform APIs that allow custom, reusable and encapsulated HTML tags.</p>
+                <p>Based on:</p>
+                <ul>
+                    <li>Custom Elements</li>
+                    <li>Shadow DOM</li>
+                    <li>HTML Template</li>
+                </ul>
+            </section>
+            <section>
+                <h3>Overview</h3>
+
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <H2>How to native web component</H2>
+                <p></p>
+            </section>
+            <section>
+                <h3>Simple web component with shadow DOM</h3>
+                <pre><code data-trim data-line-numbers><script type="text/template">
+<div>
+    <sample-component/>
+</div>
+                </script></code></pre>
+                <pre><code class="typescript" data-trim data-line-numbers><script type="text/template">
+class SampleComponent extends HTMLElement {
+    constructor() {
+        super();
+        this.attachShadow({
+            mode: 'open'
+        });
+        this.shadowRoot.innerHTML = `<div class="inside-component">My Component</div>`
+    }
+}
+if (!customElements.get('sample-component')) {
+    customElements.define('sample-component', SampleComponent);
+}
+                </script></code></pre>
+                <small>From course lesson 13 Native Web Components</small>
+            </section>
+            <section>
+                <h3>Simple web component with shadow DOM</h3>
+                <pre><code data-trim data-line-numbers><script type="text/template">
+    <sample-component>
+        John Doe
+    </sample-component>
+                </script></code></pre>
+                <pre><code class="typescript" data-trim data-line-numbers="2"><script type="text/template">
+...
+        this.shadowRoot.innerHTML = `<div class="inside-component">Hello <slot/></div>`
+...
+                </script></code></pre>
+                🖥️ Hello John Doe
+                <pre><code data-trim data-line-numbers><script type="text/template">
+    <sample-component>
+        <div slot="fullname">John Doe</div>
+        <div slot="email">John.Doe@mail.com</div>
+    </sample-component>
+                </script></code></pre>
+                <pre><code class="typescript" data-trim data-line-numbers="2"><script type="text/template">
+...
+this.shadowRoot.innerHTML = `<div class="inside-component">Hello <slot name="fullname"/> your email is <slot name="email"/>.</div>`
+...
+                </script></code></pre>
+                🖥️ Hello John Doe your email is John.Doe@mail.com.
+
+            </section>
+        </section>
+        <section>
+            <h2>Pros and cons of native web components</h2>
+            <table >
+                <colgroup>
+                    <col span="1" style="background-color:#013220">
+                    <col style="background-color:#660000">
+                </colgroup>
+                <thead><tr>
+                    <th>Pros 👍</th>
+                    <th>Cons 👎</th>
+                </tr></thead>
+                <tbody><tr>
+                    <td>Native - No third parties needed.</td>
+                    <td>Initialization speed.</td>
+                </tr>
+                <tr>
+                    <td>Easy to share and reuse.</td>
+                    <td>Small community - lack of information.</td>
+                </tr>
+                <tr>
+                    <td>More readable code.</td>
+                    <td>Might hurt SEO.</td>
+                </tr>
+                <tr>
+                    <td>Display XML formatted data.</td>
+                    <td>Sometimes components can be too encapsulated.</td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+</div>
+
+<script src="../../dist/reveal.js"></script>
+<script src="../../plugin/notes/notes.js"></script>
+<script src="../../plugin/markdown/markdown.js"></script>
+<script src="../../plugin/highlight/highlight.js"></script>
+<script src="../../js/asciinema-player.js"></script>
+
+<script>
+    // More info about initialization & config:
+    // - https://revealjs.com/initialization/
+    // - https://revealjs.com/config/
+    Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        pdfSeparateFragments: false,
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+    });
+</script>
+</body>
+</html>

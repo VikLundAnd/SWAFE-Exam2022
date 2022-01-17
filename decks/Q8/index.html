@@ -1,0 +1,266 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Question 7</title>
+
+    <link rel="stylesheet" href="../../dist/reset.css">
+    <link rel="stylesheet" href="../../dist/reveal.css">
+    <link rel="stylesheet" href="../../dist/theme/black.css">
+    <link rel="stylesheet" type="text/css" href="../../css/asciinema-player.css"/>
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="../../plugin/highlight/github-dark-dimmed.css">
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section data-markdown>
+          <textarea data-template>
+            ## Question 8
+            Explain and show examples of how to access a RESTful Web API from React.
+
+            Explain the principles of GraphQL and show how to access a Web API with GraphQL.
+
+            Discuss pros and cons of REST vs GraphQL.
+
+          </textarea>
+        </section>
+
+        <section>
+            <section>
+                <h2>Access REST API from React</h2>
+            </section>
+            <section>
+                <h3>Example from bachelor</h3>
+                <pre ><code data-ln-start-from="6" class="typescript" data-trim data-line-numbers="9-12|14-38|44-46,39-42"><script type="text/template">
+const headers = { Authorization: `Bearer ${getStoredAuthToken()}` ?? undefined };
+
+export interface RequestCallbacks<T> {
+    onSuccess?: (response: AxiosResponse<T>) => void;
+    onRedirect?: (response: AxiosResponse<T>) => void;
+    onError?: (response: AxiosError<T>) => void;
+}
+
+const api = axios.create({
+    baseURL: process.env.REACT_APP_API_URL,
+    headers: headers,
+});
+
+function arrangeCallbacks<T>(method: Promise<AxiosResponse<T>>, callbacks?: RequestCallbacks<T>) {
+    const inRange = (min: number, max: number, value: number) => {
+        return value >= min && value <= max;
+    };
+
+    if (callbacks) {
+        method
+            .then((response) => {
+                if (inRange(200, 299, response.status)) {
+                    callbacks.onSuccess?.(response);
+                } else if (inRange(300, 399, response.status)) {
+                    callbacks.onRedirect?.(response);
+                }
+            })
+            .catch((err: any | AxiosError<T>) => {
+                if (axios.isAxiosError(err)) {
+                    console.log(err.response?.status);
+
+                    callbacks.onError?.(err as AxiosError<T>);
+                } else {
+                    console.error(err);
+                }
+            });
+    }
+}
+
+export function performPostRequest<T>(Uri: string, callbacks?: RequestCallbacks<T>, body?: any) {
+    arrangeCallbacks<T>(api.post<T>(Uri, body), callbacks);
+}
+
+export function performGetRequest<T>(Uri: string, callbacks?: RequestCallbacks<T>, body?: any) {
+    arrangeCallbacks<T>(api.get<T>(Uri, body), callbacks);
+}
+                </script></code></pre>
+                <small>Snippet from bachelor - api/api.ts</small>
+            </section>
+            <section>
+                <h3>Example from bachelor</h3>
+
+                <pre><code class="typescript"  data-ln-start-from="12" data-trim><script type="text/template">
+const path = 'api/template';
+
+export const performGetTemplates = (callbacks: RequestCallbacks<Template[]>) => {
+return performGetRequest<Template[]>(`${path}/User/Templates`, callbacks);
+};
+                </script></code></pre>
+                <small>Snippet from bachelor - api/templates.ts</small>
+            </section>
+            <section>
+                <h3>Example from exercise</h3>
+                <p>Client was generated from API using NSwag Studio</p>
+                <p>Client was configured to correct endpoint</p>
+                <pre><code class="typescript" data-line-numbers data-ln-start-from="14" data-trim><script type="text/template">
+export const client = new Client('https://afe2021fitness.azurewebsites.net');
+                </script></code></pre>
+                <small>Snippet from exercise - state/api-client.ts</small>
+                <p>Endpoint could be accessed through generated methods</p>
+                <pre><code class="typescript" data-line-numbers="2" data-ln-start-from="14" data-trim><script type="text/template">
+export const getWorkouts = createAsyncThunk('workouts/getAll', async () => {
+  return await client.workoutProgramsAll();
+});
+                </script></code></pre>
+                <small>Snippet from exercise - state/slices/workouts/operations.ts</small>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h3>Access GraphQL API from React using Apollo 🚀</h3>
+            </section>
+            <section>
+                <h3>1. Install the package</h3>
+                <pre><code data-trim><script type="text/template">
+npm install @apollo/client graphql
+                </script></code></pre>
+            </section>
+            <section>
+                <h3>2. Import and init Apollo</h3>
+                <pre><code data-trim><script type="text/template">
+import {
+    ApolloClient,
+    InMemoryCache,
+    ApolloProvider,
+    useQuery,
+    gql
+} from "@apollo/client";
+                </script></code></pre>
+                <small>Snippet from lesson 11 Testing, GraphQL and custom hooks - index.js</small>
+                <pre><code data-trim class="typescript" data-line-numbers><script type="text/template">
+const client = new ApolloClient({
+    uri: 'https://48p1r2roz4.sse.codesandbox.io',
+    cache: new InMemoryCache()
+});
+                </script></code></pre>
+                <small>Snippet from lesson 11 Testing, GraphQL and custom hooks</small>
+            </section>
+            <section>
+                <h3>3. Connect Apollo Client to React using ApolloProvider</h3>
+                <pre><code data-trim class="typescript" data-line-numbers><script type="text/template">
+ReactDOM.render(
+    <ApolloProvider client={client}>
+        <React.StrictMode>
+            <App />
+        </React.StrictMode>
+    </ApolloProvider>,
+    document.getElementById('root')
+);
+                </script></code></pre>
+                <small>Snippet from lesson 11 Testing, GraphQL and custom hook</small>
+            </section>
+            <section>
+                <h3>4. Using Apollo to access GraphQL API</h3>
+                <pre><code data-trim class="typescript" data-line-numbers><script type="text/template">
+const GET_DOG_PHOTO = gql`
+    query Dog($breed: String!) {
+        dog(breed: $breed) {
+            id
+            displayImage
+        }
+    }
+`;
+                </script></code></pre>
+                <small>Snippet from lesson 11 Testing, GraphQL and custom hooks - A GraphQL query</small>
+
+                <pre><code data-trim data-line-numbers class="typescript"><script type="text/template">
+const { loading, error, data, refetch } = useQuery(GET_DOG_PHOTO, {
+    variables: { breed },
+});
+                </script></code></pre>
+                <small>Snippet from lesson 11 Testing, GraphQL and custom hooks - useQuery</small>
+
+                <pre><code data-trim data-line-numbers class="typescript"><script type="text/template">
+const [getDog, { loading, error, data }] = useLazyQuery(GET_DOG_PHOTO);
+                </script></code></pre>
+                <small>Snippet from lesson 11 Testing, GraphQL and custom hooks - useLazyQuery</small>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>REST vs GraphQL</h2>
+            </section>
+            <section>
+                <h3>GraphQL</h3>
+                <table >
+                    <colgroup>
+                        <col span="1" style="background-color:#013220">
+                        <col style="background-color:#660000">
+                    </colgroup>
+                    <thead><tr>
+                        <th>Pros 👍</th>
+                        <th>Cons 👎</th>
+                    </tr></thead>
+                    <tbody><tr>
+                        <td>Schema - The API is documented</td>
+                        <td>Adds complexity when setting up</td>
+                    </tr>
+                    <tr>
+                        <td>Decouples clients from servers - allowing them to scale independently</td>
+                        <td>For non-connected data it has little merit</td>
+
+                    </tr>
+                    <tr>
+                        <td>Efficiency - The exact data needed can be specified in a request</td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+            <section>
+                <h3>REST</h3>
+                <table >
+                    <colgroup>
+                        <col span="1" style="background-color:#013220">
+                        <col style="background-color:#660000">
+                    </colgroup>
+                    <thead><tr>
+                        <th>Pros 👍</th>
+                        <th>Cons 👎</th>
+                    </tr></thead>
+                    <tbody><tr>
+                        <td>Widely used</td>
+                        <td>Underfetching or overfetching data</td>
+                    </tr>
+                    <tr>
+                        <td>Simple to implement and understand</td>
+                        <td>No implicit API documentation</td>
+
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+        </section>
+
+    </div>
+</div>
+
+<script src="../../dist/reveal.js"></script>
+<script src="../../plugin/notes/notes.js"></script>
+<script src="../../plugin/markdown/markdown.js"></script>
+<script src="../../plugin/highlight/highlight.js"></script>
+<script src="../../js/asciinema-player.js"></script>
+
+<script>
+    // More info about initialization & config:
+    // - https://revealjs.com/initialization/
+    // - https://revealjs.com/config/
+    Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        pdfSeparateFragments: false,
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+    });
+</script>
+</body>
+</html>

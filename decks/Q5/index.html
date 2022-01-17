@@ -1,0 +1,235 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Question 5</title>
+
+    <link rel="stylesheet" href="../../dist/reset.css">
+    <link rel="stylesheet" href="../../dist/reveal.css">
+    <link rel="stylesheet" href="../../dist/theme/black.css">
+    <link rel="stylesheet" type="text/css" href="../../css/asciinema-player.css"/>
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="../../plugin/highlight/github-dark-dimmed.css">
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section data-markdown>
+          <textarea data-template>
+            ## Question 5
+            Explain and discuss responsive web design and how third-party libraries can be used to develop web applications (including NgRx, Angular Flex, and Angular Material).
+          </textarea>
+        </section>
+        <section>
+            <section>
+                <H2>NgRx</H2>
+                <p>Preprocess and extend the capabilities of CSS</p>
+            </section>
+            <section>
+                <h3>Overview</h3>
+                <ul>
+                    <li>Reactive state management inspired by Redux</li>
+                    <li>Single source of truth</li>
+                </ul>
+            </section>
+            <section>
+                <h3>Structure</h3>
+                <img src="../../assets/redux_structure.png" width="100%" alt="redux" />
+            </section>
+            <section>
+                <h3>Store</h3>
+                <ul>
+                    <li>Holds the state</li>
+                    <li>Two flavours: store (global) and componentStore (local)</li>
+                </ul>
+                <pre><code class="typescript" data-trim data-line-numbers="9"><script type="text/template">
+@NgModule({
+	declarations: [
+		AppComponent,
+		DeviceListComponent
+	],
+	imports: [
+		BrowserModule,
+		AppRoutingModule,
+		StoreModule.forRoot({ devices: devicesReducer, collection: collectionReducer }),
+		EffectsModule.forRoot([DeviceEffects, CollectionEffects])
+	],
+	providers: [],
+	bootstrap: [AppComponent]
+})
+export class AppModule { }
+                </script></code></pre>
+                <small>Example from Lesson 6 - Angular libraries</small>
+
+            </section>
+            <section>
+                <h3>Actions</h3>
+                <ul>
+                    <li>Dispatchable methods</li>
+                    <li>When a component wants a change to the store</li>
+                </ul>
+                <pre><code class="typescript" data-trim data-line-numbers="4-7"><script type="text/template">
+import { createAction, props } from "@ngrx/store";
+import { Device } from "./device.model";
+
+export const addDevice = createAction(
+	`[Device] Add Device`,
+	props<{ deviceId: string}>()
+)
+
+export const removeDevice = createAction(
+	`[Device] Remove Device`,
+	props<{ deviceId: string}>()
+)
+
+export const loadDevices = createAction(
+	`[Device/API] Load Devices`
+)
+
+export const retrievedList = createAction(
+	`[Device/API] Retrieved List`,
+	props<{ devices: ReadonlyArray<Device>}>()
+)
+                </script></code></pre>
+                <small>Example from Lesson 6 - Angular libraries</small>
+
+            </section>
+            <section>
+                <h3>Effects</h3>
+                <ul>
+                    <li>Handle side effects. I.e. http calls, timeout functions, randomness, etc.</li>
+                    <li>Listen for action -> do something -> dispatch action</li>
+                </ul>
+                <pre><code class="typescript" data-trim data-line-numbers="10-20"><script type="text/template">
+import { Injectable } from '@angular/core';
+import { Actions, createEffect, ofType } from '@ngrx/effects'
+import { EMPTY } from 'rxjs';
+import { map, mergeMap, catchError } from 'rxjs/operators';
+import { DeviceService } from '../device.service';
+import { loadDevices, retrievedList } from './device.actions';
+
+@Injectable()
+export class DeviceEffects {
+	loadDevices$ = createEffect(() =>
+	this.actions$.pipe(
+		ofType(loadDevices),
+		mergeMap(() => this.deviceService$.getDevices()
+			.pipe(
+				map(devices => (retrievedList({ devices }))),
+				catchError(() => {
+					return EMPTY
+				})
+		))
+	))
+
+	constructor(
+		private actions$: Actions,
+		private deviceService$: DeviceService) {}
+}
+                </script></code></pre>
+                <small>Example from Lesson 6 - Angular libraries</small>
+            </section>
+            <section>
+                <h3>Reducers</h3>
+                <ul>
+                    <li>Responsible for state manipulation</li>
+                    <li>Pure functions</li>
+                </ul>
+                <pre><code class="typescript" data-trim data-line-numbers="6-15"><script type="text/template">
+import { createReducer, on } from '@ngrx/store';
+import { addDevice, removeDevice } from './device.actions';
+
+export const initialState: ReadonlyArray<string> = [];
+
+export const collectionReducer = createReducer(
+	initialState,
+	on(removeDevice, (state, { deviceId }) => state.filter((id) => id !== deviceId)),
+	on(addDevice, (state, { deviceId }) => {
+		if (state.indexOf(deviceId) > -1) {
+			return state;
+		}
+		return [...state, deviceId];
+	})
+);
+                </script></code></pre>
+                <small>Example from Lesson 6 - Angular libraries</small>
+            </section>
+            <section>
+                <h3>Selectors</h3>
+                <ul>
+                    <li>Getting data from the store</li>
+                    <li>Memoization</li>
+                </ul>
+                <pre><code class="typescript" data-trim data-line-numbers="4-7"><script type="text/template">
+import { createFeatureSelector, createSelector } from "@ngrx/store";
+import { AppState } from "../state/app.state";
+import { Device } from "./device.model";
+
+export const selectDevices = createSelector(
+(state: AppState) => state.devices,
+(devices: ReadonlyArray<Device>) => devices
+)
+
+export const selectCollectionState = createFeatureSelector<AppState, ReadonlyArray<string>>('collection');
+
+export const selectDeviceCollection = createSelector(
+	selectDevices,
+	selectCollectionState,
+	(devices: ReadonlyArray<Device>, collection: ReadonlyArray<string>) => {
+		return collection.map((id) => devices.find((device) => device.name === id));
+	}
+);
+                </script></code></pre>
+                <small>Example from Lesson 6 - Angular libraries</small>
+            </section>
+        </section>
+        <section>
+            <H2>Sass, Less and SCSS</H2>
+            <p>Preprocess and extend the capabilities of CSS</p>
+            <ul>
+                <li>Write compact stylesheets.</li>
+                <li>Get optimized stylesheets</li>
+                <li>Nested hierarchies</li>
+                <li>Math operators</li>
+                <li>Variables</li>
+                <li>Modules - load files into others <code>@use</code>, <code>@import</code></li>
+                <li>Partials - files excluded from compilation, but used in others - Variables, etc. </li>
+                <li>Mixins</li>
+                <li>Inheritance</li>
+            </ul>
+        </section>
+        <section>
+            <H2>Bootstrap, Tailwind</H2>
+            <p>Premade classes for quickly and consistently styling webpages.</p>
+            <ul>
+                <li>Speeds up development</li>
+                <li>Creates consistent designs</li>
+                <li>Creates responsive designs</li>
+            </ul>
+        </section>
+    </div>
+</div>
+
+<script src="../../dist/reveal.js"></script>
+<script src="../../plugin/notes/notes.js"></script>
+<script src="../../plugin/markdown/markdown.js"></script>
+<script src="../../plugin/highlight/highlight.js"></script>
+<script src="../../js/asciinema-player.js"></script>
+
+<script>
+    // More info about initialization & config:
+    // - https://revealjs.com/initialization/
+    // - https://revealjs.com/config/
+    Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        pdfSeparateFragments: false,
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+    });
+</script>
+</body>
+</html>

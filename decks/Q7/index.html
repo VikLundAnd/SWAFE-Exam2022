@@ -1,0 +1,223 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Question 7</title>
+
+    <link rel="stylesheet" href="../../dist/reset.css">
+    <link rel="stylesheet" href="../../dist/reveal.css">
+    <link rel="stylesheet" href="../../dist/theme/black.css">
+    <link rel="stylesheet" type="text/css" href="../../css/asciinema-player.css"/>
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="../../plugin/highlight/github-dark-dimmed.css">
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section data-markdown>
+          <textarea data-template>
+            ## Question 7
+            Explain and show examples of the different possibilities of how to manage state in a React app.
+          </textarea>
+        </section>
+
+        <section>
+            <section>
+                <h2>Managing state</h2>
+            </section>
+            <section>
+                <h3>When to manage state?</h3>
+                <ul>
+                    <li><mark>S—Shared</mark> State is accessed by many components and services</li>
+                    <li><mark>H–Hydrated</mark> State that is persisted and hydrated from storage</li>
+                    <li><mark>A–Available</mark> State that needs to be available when re-entering routes</li>
+                    <li><mark>R–Retrieved</mark> State that needs to be retrieved with a side effect</li>
+                    <li><mark>I–Impacted</mark> State that is impacted by actions from other sources</li>
+                </ul>
+                <small>From Lesson 6 - Angular libraries</small>
+            </section>
+            <section>
+                <h3>useState</h3>
+                <p>Managing component state</p>
+                <pre><code class="typescript" data-trim><script type="text/template">
+const [state, setState] = useState(initialState);
+                </script></code></pre>
+                <small>Snippet from React: Hooks API Reference</small>
+            </section>
+            <section>
+                <h3>Pass props</h3>
+                <pre><code class="typescript" data-trim data-line-numbers><script type="text/template">
+function Welcome(props) {
+  return <h1>Hello, {props.name}</h1>;
+}
+
+function App() {
+  return (
+    <div>
+      <Welcome name="Sara" />
+      <Welcome name="Cahal" />
+      <Welcome name="Edite" />
+    </div>
+  );
+}
+                </script></code></pre>
+                <small>Snippet from React: Components and Props</small>
+            </section>
+            <section>
+                <h3>Context API</h3>
+                <p>Pass data through the component tree without having to pass props down manually at every level.</p>
+            </section>
+            <section>
+                <h3>Context API</h3>
+                <p>Create a context and provide it.</p>
+                <pre><code class="typescript" data-trim data-line-numbers="2,7-9"><script type="text/template">
+// Create a context for the current theme (with "light" as the default).
+const ThemeContext = React.createContext('light');
+
+class App extends React.Component {
+  render() {
+    return (
+      <ThemeContext.Provider value="dark">
+        <Toolbar />
+      </ThemeContext.Provider>
+    );
+  }
+}
+                </script></code></pre>
+                <small>Snippet from React: Context</small>
+            </section>
+            <section>
+                <h3>Context API</h3>
+                <p>Use the context in any nested component.</p>
+                <pre><code class="typescript" data-trim data-line-numbers><script type="text/template">
+// A component in the middle doesn't have to
+// pass the theme down explicitly anymore.
+function Toolbar() {
+  return (
+    <div>
+      <ThemedButton />
+    </div>
+  );
+}
+
+class ThemedButton extends React.Component {
+  static contextType = ThemeContext;
+  render() {
+    return <Button theme={this.context} />;
+  }
+}
+                </script></code></pre>
+                <small>Snippet from React: Context</small>
+            </section>
+            <section>
+                <h3>Redux</h3>
+                <p>A predictable, global state container for JavaScript apps.</p>
+            </section>
+            <section>
+                <h3>Redux - Structure</h3>
+                <p>A predictable, global state container for JavaScript apps.</p>
+                <img width="50%" src="../../assets/redux_diagram.svg" alt="Diagram showing the structure of Redux.">
+            </section>
+
+            <section>
+                <h3>Redux - The reducer</h3>
+
+                <pre><code class="typescript" data-ln-start-from="6" data-trim data-line-numbers="12-19|26,28"><script type="text/template">
+export interface UserState {
+    currentUser: User;
+}
+
+const initialState: UserState = {
+    currentUser: { userName: '', email: '' },
+};
+
+const userSlice = createSlice({
+    name: 'users',
+    initialState,
+    reducers: {
+        setUser(state, action: PayloadAction<User>) {
+            state.currentUser = action.payload;
+        },
+        setUserName(state, action: PayloadAction<string>) {
+            state.currentUser.userName = action.payload;
+        },
+    },
+});
+
+export const currentUserSelect = (state: IAppState) => state.user.currentUser;
+
+...
+
+export const { setUserName, setUser } = userSlice.actions;
+
+export default userSlice.reducer;
+                </script></code></pre>
+                <small>Snippet from bachelor - redux/reducers/user.slice.ts</small>
+
+            </section>
+
+            <section>
+                <h3>Redux - The store</h3>
+
+                <pre><code class="typescript" data-ln-start-from="6" data-trim data-line-numbers="3-5"><script type="text/template">
+export default combineReducers({
+    user: userReducer,
+    template: templateReducer,
+    form: formReducer,
+});
+                </script></code></pre>
+                <small>Snippet from bachelor - redux/reducers/index.ts</small>
+
+                <pre><code class="typescript" data-trim data-line-numbers="3-5"><script type="text/template">
+import { configureStore } from '@reduxjs/toolkit';
+import reducer from './reducers';
+
+export const store = configureStore({
+    reducer: reducer,
+});
+                </script></code></pre>
+                <small>Snippet from bachelor - redux/store.ts</small>
+            </section>
+            <section>
+                <h3>Redux - Register provider</h3>
+                <pre><code class="typescript" data-ln-start-from="7" data-trim data-line-numbers="3-5"><script type="text/template">
+import { store } from './Redux/store';
+
+ReactDOM.render(
+    <React.StrictMode>
+        <Provider store={store}>
+            <App />
+        </Provider>
+    </React.StrictMode>,
+    document.getElementById('root')
+);
+                </script></code></pre>
+                <small>Snippet from bachelor - index.tsx</small>
+            </section>
+        </section>
+    </div>
+</div>
+
+<script src="../../dist/reveal.js"></script>
+<script src="../../plugin/notes/notes.js"></script>
+<script src="../../plugin/markdown/markdown.js"></script>
+<script src="../../plugin/highlight/highlight.js"></script>
+<script src="../../js/asciinema-player.js"></script>
+
+<script>
+    // More info about initialization & config:
+    // - https://revealjs.com/initialization/
+    // - https://revealjs.com/config/
+    Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        pdfSeparateFragments: false,
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+    });
+</script>
+</body>
+</html>
