@@ -46,11 +46,15 @@
                 <H3>Components - Decorator</H3>
                 <pre><code data-trim data-line-numbers="2|3|4">
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  selector:    'app-hero-list',
+  templateUrl: './hero-list.component.html',
+  providers:  [ HeroService ]
 })
+export class HeroListComponent implements OnInit {
+  /* . . . */
+}
                 </code></pre>
+                <small>Snippet from Angular.io - Introduction to components and templates</small>
             </section>
             <section>
                 <H3>Attribute directives</H3>
@@ -153,7 +157,7 @@ export class AppModule { }
         <section>
             <section>
                 <h2>Services</h2>
-                <p>Contain logic in in injectable classes.</p>
+                <p>Contain logic in injectable classes.</p>
                 <small>E.g. logging, backend communication, etc. </small>
             </section>
             <section>

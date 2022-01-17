@@ -162,7 +162,7 @@ export default userSlice.reducer;
             <section>
                 <h3>Redux - The store</h3>
 
-                <pre><code class="typescript" data-ln-start-from="6" data-trim data-line-numbers="3-5"><script type="text/template">
+                <pre><code class="typescript" data-ln-start-from="6" data-trim ><script type="text/template">
 export default combineReducers({
     user: userReducer,
     template: templateReducer,
@@ -171,7 +171,7 @@ export default combineReducers({
                 </script></code></pre>
                 <small>Snippet from bachelor - redux/reducers/index.ts</small>
 
-                <pre><code class="typescript" data-trim data-line-numbers="3-5"><script type="text/template">
+                <pre><code class="typescript" data-trim ><script type="text/template">
 import { configureStore } from '@reduxjs/toolkit';
 import reducer from './reducers';
 
@@ -183,7 +183,7 @@ export const store = configureStore({
             </section>
             <section>
                 <h3>Redux - Register provider</h3>
-                <pre><code class="typescript" data-ln-start-from="7" data-trim data-line-numbers="3-5"><script type="text/template">
+                <pre><code class="typescript" data-ln-start-from="7" data-trim data-line-numbers="5-7"><script type="text/template">
 import { store } from './Redux/store';
 
 ReactDOM.render(

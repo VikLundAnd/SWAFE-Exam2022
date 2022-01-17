@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>Question 7</title>
+    <title>Question 8</title>
 
     <link rel="stylesheet" href="../../dist/reset.css">
     <link rel="stylesheet" href="../../dist/reveal.css">
@@ -88,7 +88,7 @@ export function performGetRequest<T>(Uri: string, callbacks?: RequestCallbacks<T
             <section>
                 <h3>Example from bachelor</h3>
 
-                <pre><code class="typescript"  data-ln-start-from="12" data-trim><script type="text/template">
+                <pre><code class="typescript" data-line-numbers  data-ln-start-from="12" data-trim><script type="text/template">
 const path = 'api/template';
 
 export const performGetTemplates = (callbacks: RequestCallbacks<Template[]>) => {
@@ -101,7 +101,7 @@ return performGetRequest<Template[]>(`${path}/User/Templates`, callbacks);
                 <h3>Example from exercise</h3>
                 <p>Client was generated from API using NSwag Studio</p>
                 <p>Client was configured to correct endpoint</p>
-                <pre><code class="typescript" data-line-numbers data-ln-start-from="14" data-trim><script type="text/template">
+                <pre><code class="typescript" data-line-numbers data-ln-start-from="3" data-trim><script type="text/template">
 export const client = new Client('https://afe2021fitness.azurewebsites.net');
                 </script></code></pre>
                 <small>Snippet from exercise - state/api-client.ts</small>

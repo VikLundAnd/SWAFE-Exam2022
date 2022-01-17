@@ -31,7 +31,9 @@
                 <small>Methods for manipulating observables</small>
             </section>
             <section>
-                <h3>Observable types</h3>
+                <h3>Observables</h3>
+                <p>Listening for values</p>
+                <p>Types</p>
                 <ul>
                     <li><code>Observable</code></li>
                     <li><code>Subject</code> hot observable that allows for multicasting.</li>
@@ -44,6 +46,205 @@
                     <li>Pipeable operators</li>
                     <li>Creation operators</li>
                 </ul>
+            </section>
+            <section id="rx-operator-of">
+                <h2>of</h2>
+                <pre><code class='javascript' data-trim data-line-numbers><script type="text/template">
+import { of } from 'rxjs';
+
+of(1, 2, 3)
+.subscribe(
+    next => console.log('next:', next),
+    err => console.log('error:', err),
+    () => console.log('the end'),
+);
+
+// Logs:
+// next: 1
+// next: 2
+// next: 3
+// the end
+						</script></code></pre>
+                <img width="60%" src="../../assets//marble-diagrams/of.svg" alt="of" />
+                <aside class="notes" aria-label="notes">
+                    <h4>References</h4>
+                    <ul>
+                        <li><a href="https://rxjs.dev/api/index/function/of">RxJs - of</a></li>
+                    </ul>
+                </aside>
+                <small>From Lesson 02 – RxJS and routing</small>
+
+            </section>
+            <section id="rx-operator-from">
+                <h2>from</h2>
+                <pre><code class='javascript' data-trim data-line-numbers><script type="text/template">
+import { from } from 'rxjs';
+
+const array = [10, 20, 30];
+const result = from(array);
+
+result.subscribe(x => console.log(x));
+
+// Logs:
+// 10
+// 20
+// 30
+						</script></code></pre>
+                <img src="../../assets/marble-diagrams/from.svg" width="60%" alt="from"/>
+                <aside class="notes" aria-label="notes">
+                    <h4>References</h4>
+                    <ul>
+                        <li><a href="https://rxjs.dev/api/index/function/from">RxJS - from</a></li>
+                    </ul>
+                </aside>
+                <small>From Lesson 02 – RxJS and routing</small>
+            </section>
+            <section id="rx-operator-combine-latest">
+                <h2>combineLatest</h2>
+                <p>Get latest values of multiple Observables</p>
+                <pre><code class='javascript' data-trim data-line-numbers><script type="text/template">
+import { combineLatest, timer } from 'rxjs';
+
+const firstTimer = timer(0, 1000); // emit 0, 1, 2... after every second, starting from now
+const secondTimer = timer(500, 1000); // emit 0, 1, 2... after every second, starting 0,5s from now
+const combinedTimers = combineLatest([firstTimer, secondTimer]);
+combinedTimers.subscribe(value => console.log(value));
+						</script></code></pre>
+                <img width="60%" src="../../assets/marble-diagrams/combinelatest.svg" alt="combinelatest"/>
+                <aside class="notes" aria-label="notes">
+                    <h4>References</h4>
+                    <ul>
+                        <li><a href="https://rxjs.dev/api/index/function/combineLatest">RxJS - combineLatest</a></li>
+                    </ul>
+                </aside>
+                <small>From Lesson 02 – RxJS and routing</small>
+            </section>
+            <section id="rx-operator-map">
+                <h2>map</h2>
+                <p>Transform an input to a new output</p>
+                <pre><code class='javascript' data-trim data-line-numbers><script type="text/template">
+import { fromEvent } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+const clicks = fromEvent(document, 'click');
+const positions = clicks.pipe(map(ev => ev.clientX));
+positions.subscribe(x => console.log(x));
+						</script></code></pre>
+                <img width="60%" src="../../assets/marble-diagrams/map.svg" alt="map" />
+                <aside class="notes" aria-label="notes">
+                    <h4>References</h4>
+                    <ul>
+                        <li><a href="https://rxjs.dev/api/operators/map">RxJS - map</a></li>
+                        <li><a href="http://reactivex.io/documentation/operators/map.html">ReactiveX - Map operator</a></li>
+                    </ul>
+                </aside>
+                <small>From Lesson 02 – RxJS and routing</small>
+            </section>
+            <section id="rx-operator-switch-map">
+                <h2>switchMap</h2>
+                <p>Switch from one Observable to another</p>
+                <pre><code class='javascript' data-trim data-line-numbers><script type="text/template">
+import { fromEvent, interval } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+
+const clicks = fromEvent(document, 'click');
+const result = clicks.pipe(switchMap((ev) => interval(1000)));
+result.subscribe(x => console.log(x));
+						</script></code></pre>
+                <img width="60%" src="../../assets/marble-diagrams/switchmap.svg" alt="switchmap"/>
+                <aside class="notes" aria-label="notes">
+                    <h4>Use cases</h4>
+                    <ul><li>When an observable is dependent on another observable</li></ul>
+                    <h4>References</h4>
+                    <ul>
+                        <li><a href="https://rxjs.dev/api/operators/switchMap">RxJS - switchMap</a></li>
+                    </ul>
+                </aside>
+                <small>From Lesson 02 – RxJS and routing</small>
+            </section>
+            <section id="rx-operator-filter">
+                <h2>filter</h2>
+                <p>Control which values are emitted based on condition</p>
+                <pre><code class='javascript' data-trim data-line-numbers><script type="text/template">
+import { fromEvent } from 'rxjs';
+import { filter } from 'rxjs/operators';
+
+const clicks = fromEvent(document, 'click');
+const clicksOnDivs = clicks.pipe(filter(ev => ev.target.tagName === 'DIV'));
+clicksOnDivs.subscribe(x => console.log(x));
+						</script></code></pre>
+                <img src="../../assets/marble-diagrams/filter.svg" alt="filter" width="60%" />
+                <aside class="notes" aria-label="notes">
+                    <h4>References</h4>
+                    <ul>
+                        <li><a href="https://rxjs.dev/api/operators/filter">RxJS - filter</a></li>
+                    </ul>
+                </aside>
+                <small>From Lesson 02 – RxJS and routing</small>
+            </section>
+            <section id="rx-operator-take">
+                <h2>take</h2>
+                <p>Emits only the first count values emitted by the source Observable</p>
+                <pre><code class="javascript" data-trim data-line-numbers><script type="text/template">
+import { interval } from 'rxjs';
+import { take } from 'rxjs/operators';
+
+const intervalCount = interval(1000);
+const takeFive = intervalCount.pipe(take(5));
+takeFive.subscribe(x => console.log(x));
+						</script></code></pre>
+                <img src="../../assets/marble-diagrams/take.svg" alt="take" />
+                <aside class="notes" aria-label="notes">
+                    <ul>
+                        <li>Only emits notification after time span has elapsed without new source emissions</li>
+                    </ul>
+                    <h4>References</h4>
+                    <ul>
+                        <li><a href="https://rxjs.dev/api/operators/take">RxJS - take</a></li>
+                    </ul>
+                </aside>
+                <small>From Lesson 02 – RxJS and routing</small>
+            </section>
+            <section id="rx-operator-debounce-time">
+                <h2>debounceTime</h2>
+                <p>Emits notification after time span and no new source emissions</p>
+                <pre><code class="javascript" data-trim data-line-numbers><script type="text/template">
+import { fromEvent } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+
+const clicks = fromEvent(document, 'click');
+const result = clicks.pipe(debounceTime(1000));
+result.subscribe(x => console.log(x));
+						</script></code></pre>
+                <img src="../../assets/marble-diagrams/debouncetime.svg" alt="debouncetime" />
+                <aside class="notes" aria-label="notes">
+                    <h4>References</h4>
+                    <ul>
+                        <li><a href="https://rxjs.dev/api/operators/debounceTime">RxJS - debounceTime</a></li>
+                    </ul>
+                </aside>
+                <small>From Lesson 02 – RxJS and routing</small>
+            </section>
+            <section id="rx-operator-tap">
+                <h2>tap</h2>
+                <p>Trigger side effects from inside the observable pipe</p>
+                <pre><code class='javascript' data-trim data-line-numbers><script type="text/template">
+import { of } from 'rxjs';
+import { tap, map } from 'rxjs/operators';
+
+of(Math.random()).pipe(
+    tap(console.log),
+    map(n => n > 0.5 ? 'big' : 'small')
+).subscribe(console.log);
+						</script></code></pre>
+                <img src="../../assets/marble-diagrams/tap.svg" alt="tap"/>
+                <aside class="notes" aria-label="notes">
+                    <h4>References</h4>
+                    <ul>
+                        <li><a href="https://rxjs.dev/api/operators/tap">RxJS - tap</a></li>
+                    </ul>
+                </aside>
+                <small>From Lesson 02 – RxJS and routing</small>
             </section>
         </section>
 
@@ -76,98 +277,79 @@ export class AppModule { }
             <section>
                 <h3>Implement service for API requests.</h3>
                 <pre><code data-trim>
-                    ng g s transaction
+                    ng g s credit-card
                 </code></pre>
-                <small>Create a transactions service.</small>
-                <pre><code data-trim data-ln-start-from="13" data-line-numbers="8, 11">
+                <small>Create a credit-card service.</small>
+                <pre><code data-trim data-ln-start-from="9" data-line-numbers="8, 11">
                     <script type="text/template">
-@Injectable({
+Injectable({
   providedIn: 'root',
 })
-export class TransactionService {
+export class CreditCardService {
   private baseUrl: string = '/api';
-  private transactionsUrl: string = this.baseUrl + '/transactions';
+  private creditCardUrl: string = this.baseUrl + '/credit_cards';
 
-  constructor(private readonly httpClient: HttpClient) { }
+  constructor(private readonly httpClient: HttpClient) {}
 
-  public getTransactions(): Observable<ITransaction[]> {
-    return this.httpClient.get<ITransaction[]>(this.transactionsUrl);
+public getCreditCards(): Observable<ICreditCard[]> {
+    return this.httpClient.get<ICreditCard[]>(this.creditCardUrl);
   }
+
                     </script></code></pre>
                 <small>Inject and use <code>httpClient</code>.</small>
             </section>
 
             <section>
-                <pre><code data-trim data-ln-start-from="28" data-line-numbers="11-13">
+                <h3>Use service in class to get observable.</h3>
+                <pre><code data-trim data-ln-start-from="8" data-line-numbers="8,11,16">
                     <script type="text/template">
-ngOnInit(): void {
-    this.creditCards = this.creditCardService
-        .getCreditCards()
-        .pipe(
-            tap((cc: ICreditCard[]) =>
-                this.current_credit_card_number.next(cc[0].card_number)
-            )
-        );
-    this.current_credit_card_number.subscribe(
-        (new_credit_card_number: number) => {
-            this.filtered = this.transactionListService.getFilteredTransactions(
-                new_credit_card_number
-            );
-        }
-    );
-}
+@Component({
+  selector: 'app-credit-card-list',
+  templateUrl: './credit-card-list.component.html',
+  styleUrls: ['./credit-card-list.component.scss'],
+})
+export class CreditCardListComponent implements OnInit {
+
+  public CreditCards$!: Observable<ICreditCard[]>;
+
+  constructor(
+    private readonly creditCardService: CreditCardService,
+    private readonly router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.CreditCards$ = this.creditCardService.getCreditCards();
+  }
                     </script></code></pre>
-                <small>Use transaction service. </small>
-                <small><em>transaction-overview.component.ts</em></small>
+                <small>Use credit-card service. </small>
+                <small><em>credit-card-list.component.ts</em></small>
 
             </section>
             <section>
+                <h3>Use observable with async pipe operator.</h3>
                 <pre><code data-trim data-line-numbers="13">
                     <script type="text/template">
 <div class="container">
-  <h1>Transactions</h1>
-  <button class="createBtn" mat-raised-button routerLink="add">Create</button>
-  <span>Filter by:</span>
-  <select (change)="this.filterTransactions($event.target)" class="select">
-    <option
-            *ngFor="let creditCard of creditCards | async"
-            value="{{ creditCard.card_number }}"
-    >
-      {{ creditCard.cardholder_name }}
-    </option>
-  </select>
-  <app-transaction-list [filtered]="this.filtered"> </app-transaction-list>
-</div>
-                    </script></code></pre>
-                <small>Pass down observable.</small>
-                <small><em>transaction-overview.component.html</em></small>
-            </section>
-            <section>
-                <pre><code data-trim data-line-numbers="15">
-                    <script type="text/template">
-<div class="header-container">
-  <span class="spacing">Date:</span>
-  <span class="spacing">Credit card number:</span>
-  <span class="spacing">Comment:</span>
-  <span class="spacing-amount">Amount:</span>
-  <span class="spacing-currency">Curreny:</span>
-  <div class="">
-    <img class="icon" src="../../../assets/delete.png" />
+  <div class="header-container">
+    <span class="spacing">Card number</span>
+    <span class="spacing">Cardholder name</span>
+    <span class="spacing">Issuer</span>
+    <div class="">
+      <img class="icon" src="../../../assets/delete.png" />
+    </div>
   </div>
+  <div class="divider"></div>
+  <app-credit-card-list-item
+    class="line"
+    *ngFor="let creditCard of CreditCards$ | async"
+    [card]="creditCard"
+    (click)="openDetailsForCreditCard(creditCard.card_number)"
+  ></app-credit-card-list-item>
 </div>
-<div class="divider"></div>
-<app-transaction-list-item
-        appHighlight="blue"
-        class="line"
-        *ngFor="let transaction of filtered | async"
-        [transaction]="transaction"
-></app-transaction-list-item>
                     </script></code></pre>
-                <small>Asynchronously pipe observable into components for each transaction.</small>
-                <small><em>transaction-list.component.html</em></small>
-
+                <small>Use observable with async pipe.</small>
+                <small><em>credit-card-list.component.html</em></small>
             </section>
-
 
             <section>
                 <h3>Use of <code>httpClientModule</code> and <code>RxJS</code>.</h3>
